@@ -1,4 +1,4 @@
-##微信自动聊天机器人
+## 微信自动聊天机器人
 > 需要`requests`,`pillow`,`pyquery`库，基于`python3.5`
 
 1. 在config.py里按要求修改`target_name`,`is_auto_open`,`key`
