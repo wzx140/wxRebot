@@ -1,4 +1,4 @@
-
+# coding=utf-8
 import requests
 import json
 from config import key
@@ -12,7 +12,3 @@ def replay(msg):
     res.encoding = 'utf-8'
     jd = json.loads(res.text)
     return jd['text']
-
-
-if __name__ == '__main__':
-    replay('哈哈')
