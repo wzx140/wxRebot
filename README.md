@@ -14,10 +14,10 @@
 此为实验功能，在`config.py`里修改`open_mode = 2`即可开启，实际效果由终端文字显示效果决定
 > 若终端为黑底白字可修改 `inverse_mode = 1`
 
-### 构建
-#### pipenv
-`pipenv install`  
-`pipenv run run.py`
+### 构建环境
+#### conda
+- 导入包：`conda install --yes --file requirements.txt`
+- 或者创建新的环境：`conda create --name <env> --file requirements.txt`
 #### pip
 `pip3 install requests`
 `pip3 install pillow`
