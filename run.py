@@ -1,9 +1,9 @@
 # coding=utf-8
-import time
 
-import log
-from config import target_name, open_mode,inverse_mode
-from wx import login, get_user_info, open_notify, get_contact, Sync, get_message, send
+import logging
+from log import setup_logging
+from config import target_name, open_mode, inverse_mode
+from wx import login, get_user_info, open_notify, get_contact, sync, get_message, send
 from robo import replay
 
 
@@ -19,8 +19,11 @@ def get_nick_name(user_name, contact_list):
 
 
 def main():
+    setup_logging()
+    logger = logging.getLogger("root")
+
     try:
-        url = login(open_mode,inverse_mode)
+        url = login(open_mode, inverse_mode)
         get_user_info(url)
         contact_list = get_contact()
         target_id = ''
@@ -33,26 +36,24 @@ def main():
                     target_id = contact['UserName']
 
         if target_id:
-            log.log_debug('找到目标' + str(target_id))
+            logger.debug('找到目标' + str(target_id))
             open_notify()
-            while (True):
-                sel = Sync()
+            while True:
+                sel = sync()
                 if sel == '2':
                     msg_list = get_message()
                     if msg_list:
                         for msg in msg_list:
-                            log.log_info('收到信息 ' + get_nick_name(msg[0], contact_list) + '：' + msg[1])
+                            logger.info('收到信息 ' + get_nick_name(msg[0], contact_list) + '：' + msg[1])
                             if target_id == 'ALL':
                                 send(replay(msg[1]), msg[0])
                             elif msg[0] == target_id:
                                 send(replay(msg[1]), msg[0])
-                    # send('实验，勿回', 'filehelper')
-                time.sleep(5)
 
         else:
             raise RuntimeError('找不到用户：' + target_name)
     except Exception as e:
-        log.log_exception(e)
+        logger.exception(e)
 
 
 if __name__ == '__main__':

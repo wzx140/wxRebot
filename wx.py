@@ -1,15 +1,15 @@
 # coding=utf-8
+
 import json
+import logging
 import random
 import time
 from io import BytesIO
-
 import requests
 import re
 from PIL import Image
 from pyquery import PyQuery as pq
 from util import get_image
-import log
 
 # 模拟请求头
 headers = {'Host': 'wx.qq.com', 'Referer': 'https://wx.qq.com/?&lang=zh_CN', 'Origin': 'https://wx.qq.com',
@@ -32,6 +32,8 @@ Sync_url = 'https://webpush.wx.qq.com/cgi-bin/mmwebwx-bin/synccheck?r={r}&skey={
 
 # 保存cookie的会话
 req = requests.Session()
+
+logger = logging.getLogger("root")
 
 # 开启通知
 n_url = 'https://wx.qq.com/cgi-bin/mmwebwx-bin/webwxstatusnotify?lang=zh_CN&pass_ticket={pass_ticket}'
@@ -82,34 +84,26 @@ def login(open_mode, mode):
         elif open_mode == 0:
             print('请打开二维码连接：' + qr_url.format(uuid=uuid))
 
-        log.log_debug('登录二维码加载成功')
+        logger.debug('登录二维码加载成功')
 
         # 模拟登录
-        while (True):
+        while True:
             res = req.get(login_url.format(uuid=uuid), headers=headers)
             res.raise_for_status()
 
             text = res.content.decode('utf-8')
-            # print(res.url)
             if 'redirect_uri' in text:
                 pattern = re.compile('redirect_uri="(.+)"')
                 url = re.findall(pattern, text)[0]
-                # print(res)
-                # print(text)
                 if url:
-                    log.log_info('登录成功')
+                    logger.info('登录成功')
                     return url
-                    # print(url)
                 else:
                     raise RuntimeError(url + '规则改变')
             elif 'userAvatar' in text:
-                # print(res)
-                # print(text)
-                log.log_debug('用户已扫码')
+                logger.debug('用户已扫码')
                 time.sleep(5)
             elif '400' in text:
-                # print(res)
-                # print(text)
                 raise RuntimeError('二维码已过期，请重启')
     except requests.exceptions.RequestException as e:
         raise RuntimeError(e, e.request.url + ' 访问失败')
@@ -121,7 +115,6 @@ def get_user_info(url):
         res = req.get(url + '&fun=new&version=v2&lang=zh_CN', headers=headers)
         res.raise_for_status()
         res.encoding = 'utf-8'
-        # print(res.text)
 
         doc = pq(res.text)
         skey = doc('skey').text()
@@ -133,8 +126,8 @@ def get_user_info(url):
             raise RuntimeError(url + ' 规则改变')
 
         # DeviceID巨坑，其实是随机生成的,但要不断变化
-        BaseRequest = {'uin': uin, 'sid': sid, 'skey': skey, 'DeviceID': 'e' + repr(random.random())[2:17]}
-        data = {'BaseRequest': BaseRequest}
+        base_request = {'uin': uin, 'sid': sid, 'skey': skey, 'DeviceID': 'e' + repr(random.random())[2:17]}
+        data = {'BaseRequest': base_request}
         # post的是json格式
         dump_json_data = json.dumps(data)
 
@@ -160,11 +153,11 @@ def get_user_info(url):
         info['uin'] = uin
         info['pass_ticket'] = pass_ticket
         info['from_user_name'] = from_user_name
-        info['BaseRequest'] = BaseRequest
+        info['BaseRequest'] = base_request
         info['SyncKey'] = sync_key_all
         info['synckey'] = sync_key
 
-        log.log_debug('基本信息获取完毕')
+        logger.debug('基本信息获取完毕')
     except requests.exceptions.RequestException as e:
         raise RuntimeError(e, e.request.url + ' 访问失败')
 
@@ -180,7 +173,7 @@ def open_notify():
         json_data = json.loads(res.content.decode('utf-8'))
         ret = json_data['BaseResponse']['Ret']
         if ret == 0:
-            log.log_info('开启通知成功')
+            logger.info('开启通知成功')
         else:
             raise RuntimeError('开启通知失败')
     except requests.exceptions.RequestException as e:
@@ -194,7 +187,7 @@ def get_time():
 
 
 # 发送心跳包，需要循环
-def Sync():
+def sync():
     try:
         res = req.get(
             Sync_url.format(r=get_time(), skey=info['skey'], sid=info['sid'], uin=info['uin'],
@@ -203,17 +196,15 @@ def Sync():
         res.raise_for_status()
 
         text = res.content.decode('utf-8')
-        # print(info['synckey'])
-        # print(text)
         pattern = re.compile(r'retcode:"(\d+)",selector:"(\d)"')
         ret_code, selector = re.findall(pattern, text)[0]
         if ret_code == '0':
-            log.log_info('心跳成功')
+            logger.debug('心跳成功')
             return selector
         else:
-            log.log_error('心跳失败')
-    except requests.exceptions.RequestException as e:
-        raise RuntimeError(e, e.request.url + ' 访问失败')
+            logger.error('心跳失败')
+    except requests.exceptions.RequestException:
+        logger.error('心跳失败')
 
 
 # 获取信息以及更新synckey
@@ -225,7 +216,6 @@ def get_message():
                        data=dump_json_data,
                        headers=headers)
         res.raise_for_status()
-        # print(res.content)
         json_data = json.loads(res.content.decode('utf-8'))
 
         # 更新synckey
@@ -246,14 +236,14 @@ def get_message():
                 from_user_name = msg['FromUserName']
                 content = msg['Content']
                 if content == '' and from_user_name == info['from_user_name']:
-                    log.log_debug('检测到微信其他端有空操作')
+                    logger.debug('检测到微信其他端有空操作')
 
                 elif from_user_name == info['from_user_name']:
-                    log.log_info('微信其他端发出消息：' + content)
+                    logger.info('微信其他端发出消息：' + content)
 
                 else:
                     msg_list.append((from_user_name, content))
-                    log.log_info('接收到' + str(len(msg_list)) + '个消息')
+                    logger.info('接收到' + str(len(msg_list)) + '个消息')
                     return msg_list
     except requests.exceptions.RequestException as e:
         raise RuntimeError(e, e.request.url + ' 访问失败')
@@ -275,11 +265,10 @@ def send(message, to_user_name):
         res.raise_for_status()
 
         json_data = json.loads(res.content.decode('utf-8'))
-        # print(json_data)
         if json_data['BaseResponse']['Ret'] == 0:
-            log.log_info('发送：' + message)
+            logger.info('发送：' + message)
         else:
-            log.log_error(message + '发送失败')
+            logger.error(message + '发送失败')
     except requests.exceptions.RequestException as e:
         raise RuntimeError(e, e.request.url + ' 访问失败')
 
@@ -297,27 +286,4 @@ def get_contact():
         raise RuntimeError(
             contact_url.format(pass_ticket=info['pass_ticket'], r=get_time(), skey=info['skey']) + ' 规则改变')
 
-    list = []
-    for member in member_list:
-        m_ber = {'NickName': member['NickName'], 'UserName': member['UserName']}
-        list.append(m_ber)
-    return list
-
-# if __name__ == '__main__':
-#     url = login()
-#     get_user_info(url)
-#     ret = open_notify()
-#     contact_list = get_contact()
-#     if ret == 0:
-#         print('开启通知成功')
-#         while (True):
-#             sel = Sync()
-#             if sel == '2':
-#                 msg_list = get_message()
-#                 # if msg_list:
-#                 #     send('实验，勿回', msg_list[0][0])
-#                 send('实验，勿回', 'filehelper')
-#             time.sleep(2)
-#     else:
-#         print('开启通知失败')
-# print(info['synckey'])
+    return map(lambda member: {'NickName': member['NickName'], 'UserName': member['UserName']}, member_list)

@@ -7,7 +7,6 @@ url = 'http://www.tuling123.com/openapi/api?key={key}&info={info}'
 
 
 def replay(msg):
-    # info = urllib.parse.urlencode(msg)
     res = requests.get(url.format(key=key, info=msg))
     res.encoding = 'utf-8'
     jd = json.loads(res.text)
