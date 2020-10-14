@@ -8,5 +8,8 @@ open_mode = 0
 
 inverse_mode = 0
 
+# 心跳频率，越大机器人回复的越慢
+sync_frequency = 1
+
 # 图灵机器人的key,不可以为空
 key = ''

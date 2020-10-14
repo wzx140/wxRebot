@@ -201,8 +201,6 @@ def sync():
         if ret_code == '0':
             logger.debug('心跳成功')
             return selector
-        else:
-            logger.error('心跳失败')
     except requests.exceptions.RequestException:
         logger.error('心跳失败')
 
@@ -286,4 +284,10 @@ def get_contact():
         raise RuntimeError(
             contact_url.format(pass_ticket=info['pass_ticket'], r=get_time(), skey=info['skey']) + ' 规则改变')
 
-    return map(lambda member: {'NickName': member['NickName'], 'UserName': member['UserName']}, member_list)
+    id2name = {}
+    name2id = {}
+    for member in member_list:
+        id2name[member['UserName']] = member['NickName']
+        name2id[member['NickName']] = member['UserName']
+
+    return id2name, name2id
