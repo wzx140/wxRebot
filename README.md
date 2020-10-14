@@ -13,6 +13,7 @@
 - `inverse_mode` 二维码打印模式
     - 0
     - 1 反色，因为有的控制台是黑底白字
+- `sync_frequency` 心跳频率
 - `key` 图灵机器人key
 > 注：key为自己申请的图灵key，[申请网址](http://www.tuling123.com/)
 
