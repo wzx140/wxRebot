@@ -1,7 +1,7 @@
 ## 微信自动聊天机器人
 > python>=3.5
 
-可以实现对特定好友消息的自动回复
+可以实现对特定好友消息的自动回复，若出现报错以及心跳失败的情况，请检查手机上是否已经显示电脑版微信登录，若登录就退出，并重新运行程序
 
 ### 参数设定
 在`config.py`里修改参数
@@ -20,8 +20,8 @@
 ### 构建环境
 如果使用 anaconda，使用下面任选一种方式即可导入依赖
 - 导入包：`conda install --yes --file requirements.txt`
-- 或者创建新的环境：`conda create --name <env> --file requirements.txt`  
-  
+- 或者创建新的环境：`conda create --name <env> --file requirements.txt`
+
 也可以使用pip安装以下依赖
 - `pip install requests`
 - `pip install pillow`
@@ -30,4 +30,3 @@
 
 ### 运行
 `python run.py`
-> 注：若出现报错以及心跳失败的情况，请检查手机上是否已经显示电脑版微信登录，若登录就退出，并重新运行程序
