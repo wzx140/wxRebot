@@ -44,7 +44,7 @@ class Wx(object):
         self.__robots.append(robo)
         self.__logger.debug("register " + robo.__class__.__name__)
 
-    def login(self, open_mode: int, inverse_mode: int) -> str:
+    def login(self, open_mode: int, inverse_mode: bool) -> str:
         """
         模拟登录
         :param open_mode: 二维码打开模式
@@ -171,6 +171,7 @@ class Wx(object):
         发送心跳包，需要循环调用以维持连接
         :return: ret_code
         """
+
         try:
             res = self.__req.get(
                 SYNC_URL.format(r=get_time_stamp(), skey=self.__info['skey'], sid=self.__info['sid'],
@@ -185,6 +186,8 @@ class Wx(object):
             if ret_code == '0':
                 self.__logger.debug('心跳成功')
                 return selector
+            else:
+                self.__logger.error('心跳失败')
         except requests.exceptions.RequestException:
             self.__logger.exception('心跳失败')
 
@@ -224,8 +227,7 @@ class Wx(object):
                     self.__logger.debug('检测到微信其他端有空操作')
 
                 elif from_user_name == self.__info['from_user_name']:
-                    self.__logger.info('微信其他端向 {user} 发出消息: {message}'.format(
-                        user=self.__id2name.get(from_user_name, from_user_name), message=content))
+                    self.__logger.info('微信其他端发出消息: {message}'.format(message=content))
 
                 else:
                     msg_list.append((from_user_name, content))
@@ -240,7 +242,7 @@ class Wx(object):
         """
 
         if message is None:
-            pass
+            return
 
         # 这里有个坑，ClientMsgId为，时间戳左移4位随后补上4位随机数
         msg = {'ClientMsgId': int(str(get_time_stamp()) + repr(random.random())[2:6]), 'Content': message,
@@ -291,7 +293,7 @@ class Wx(object):
             target_id = ''
 
             # 找到昵称对应id
-            if target_name == '1':
+            if target_name is None:
                 target_id = 'ALL'
             elif target_name in self.__name2id.keys():
                 target_id = self.__name2id[target_name]
@@ -306,7 +308,7 @@ class Wx(object):
                         if msg_list:
                             for user_id, content in msg_list:
                                 self.__logger.info('收到信息 ' + self.__id2name.get(user_id, user_id) + '：' + content)
-                                if target_id in ['ALL', target_id]:
+                                if user_id in ['ALL', target_id]:
                                     # 调用所有机器人
                                     for robo in self.__robots:
                                         self.__send(robo.reply(content), user_id)

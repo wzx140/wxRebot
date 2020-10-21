@@ -5,13 +5,13 @@ from io import BytesIO
 from PIL import Image
 
 
-def get_image(source, width=40, height=40, mood=0):
+def get_image(source, width=40, height=40, mood=False):
     """
     二进制二维码转化为字符串
     :param source: 源数据
     :param width: 缩放图片大小
     :param height： 缩放图片大小
-    :param mood： 0->正常 1->反色
+    :param mood： false->正常 true->反色
     :return:
     """
 
@@ -24,7 +24,7 @@ def get_image(source, width=40, height=40, mood=0):
     for y in range(height):
         for x in range(width):
             pix = image.getpixel((x, y))
-            if mood == 0:
+            if mood:
                 if pix < 10:
                     code += '██'
                 if pix > 200:
