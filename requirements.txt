@@ -1,0 +1,5 @@
+requests==2.14.2
+ChatterBot==1.1.0
+pyquery==1.4.0
+Pillow==8.0.0
+PyYAML==5.3.1
