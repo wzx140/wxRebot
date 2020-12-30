@@ -308,7 +308,7 @@ class Wx(object):
                         if msg_list:
                             for user_id, content in msg_list:
                                 self.__logger.info('收到信息 ' + self.__id2name.get(user_id, user_id) + '：' + content)
-                                if user_id in ['ALL', target_id]:
+                                if target_id in ['ALL', user_id]:
                                     # 调用所有机器人
                                     for robo in self.__robots:
                                         self.__send(robo.reply(content), user_id)
