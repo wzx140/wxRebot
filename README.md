@@ -30,7 +30,10 @@ optional arguments:
 [图灵key申请网址](http://www.tuling123.com/)
 
 
-`open_mode`默认为0即在控制台中打印二维码的url，如果指定为1，需要在`inverse_mode`中指定true或者false，这是因为有的控制台是黑底白字的，打印的二维码需要反色。如果`open_mode`指定为3则自动调用系统默认图片查看器打开二维码
+
+- `open_mode`默认为0，在控制台中打印二维码的url
+- `open_mode`若为1，则在控制台打印二维码，需要在`inverse_mode`中指定true或者false，这是因为有的控制台是黑底白字的，打印的二维码需要反色
+- `open_mode`若为2，则自动调用系统默认图片查看器打开二维码
 
 ### 自定义机器人
 已经实现了调用[ChatterBot](https://github.com/gunthercox/ChatterBot) 的本地机器人(效果较差)和调用图灵api的机器人(效果较好但有每天次数限制)。
