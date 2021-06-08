@@ -2,5 +2,5 @@ requests==2.25.1
 ChatterBot==1.0.8
 chatterbot-corpus==1.2.0
 pyquery==1.4.3
-Pillow==8.0.1
+Pillow==8.2.0
 spacy==2.3.5
