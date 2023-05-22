@@ -1,4 +1,4 @@
-requests==2.25.1
+requests==2.31.0
 ChatterBot==1.0.8
 chatterbot-corpus==1.2.0
 pyquery==1.4.3
